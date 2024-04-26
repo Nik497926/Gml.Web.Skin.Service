@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "V5cZaYMHWwWtBo98emSaTmZ7JmjKuvxBpmTOAMscuDE=",
+  "Source": "Gml.Web.Skin.Service",
+  "BasePath": "_content/Gml.Web.Skin.Service",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

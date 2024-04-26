@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Gml.Web.Skin.Service.props" />
+</Project>
