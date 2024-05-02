@@ -76,7 +76,7 @@ internal abstract class TextureRequests
     {
         var user = SkinHelper.Create($"http://{request.Host.Value}", userName);
 
-        if (!user.HasCloak) return Task.FromResult(Results.BadRequest("Cloak not exists"));
+        if (!user.HasCloak) return Task.FromResult(Results.NotFound("Cloak not exists"));
 
         var image = SkinViewer.SkinViewer.GetCloak(user.CloakFullPath, user, size ?? 128);
 
@@ -87,7 +87,7 @@ internal abstract class TextureRequests
     {
         var user = SkinHelper.Create($"http://{request.Host.Value}", userName);
 
-        if (!user.HasCloak) return Task.FromResult(Results.BadRequest("Cloak not exists"));
+        if (!user.HasCloak) return Task.FromResult(Results.NotFound("Cloak not exists"));
 
         return Task.FromResult(Results.File(user.CloakFullPath, "image/png"));
     }
