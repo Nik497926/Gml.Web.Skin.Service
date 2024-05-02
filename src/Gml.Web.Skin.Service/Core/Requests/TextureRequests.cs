@@ -82,6 +82,7 @@ internal abstract class TextureRequests
 
         return Task.FromResult(Results.File(image, "image/png"));
     }
+
     internal static Task<IResult> GetCloakTexture(HttpRequest request, string userName)
     {
         var user = SkinHelper.Create($"http://{request.Host.Value}", userName);
