@@ -46,15 +46,15 @@ public static class ApplicationExtensions
         app.MapGet("/{userName}", TextureRequests.GetUserTexture);
 
         app.MapPost("/skin/{userName}", TextureRequests.LoadSkin);
-        app.MapGet("/skin/{userName}", TextureRequests.GetSkin);
+        app.MapGet("/skin/{userName}/{uuid?}", TextureRequests.GetSkin);
         app.MapGet("/skin/{userName}/head/{size}", TextureRequests.GetSkinHead);
         app.MapGet("/skin/{userName}/front/{size}", TextureRequests.GetSkinFront);
         app.MapGet("/skin/{userName}/back/{size}", TextureRequests.GetSkinBack);
         app.MapGet("/skin/{userName}/full-back/{size}", TextureRequests.GetSkinAndCloakBack);
 
+        app.MapGet("/cloak/{userName}/{uuid?}", TextureRequests.GetCloakTexture);
         app.MapPost("/cloak/{userName}", TextureRequests.LoadCloak);
-        app.MapGet("/cloak/{userName}", TextureRequests.GetCloakTexture);
-        app.MapGet("/cloak/{userName}/{size}", TextureRequests.GetCloak);
+        app.MapGet("/cloak/{userName}/front/{size}", TextureRequests.GetCloak);
 
         app.MapGet("/refresh/{userName}", TextureRequests.RefreshCache);
 
