@@ -41,7 +41,7 @@ internal abstract class TextureRequests
         return Results.Ok(mapper.Map<UserTextureReadDto>(texture));
     }
 
-    internal static Task<IResult> GetSkin(HttpRequest request, string userName)
+    internal static Task<IResult> GetSkin(HttpRequest request, string userName, string? uuid)
     {
         var user = SkinHelper.Create($"http://{request.Host.Value}", userName);
 
@@ -83,7 +83,7 @@ internal abstract class TextureRequests
         return Task.FromResult(Results.File(image, "image/png"));
     }
 
-    internal static Task<IResult> GetCloakTexture(HttpRequest request, string userName)
+    internal static Task<IResult> GetCloakTexture(HttpRequest request, string userName, string uuid)
     {
         var user = SkinHelper.Create($"http://{request.Host.Value}", userName);
 
