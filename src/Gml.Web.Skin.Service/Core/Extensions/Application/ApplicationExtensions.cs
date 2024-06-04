@@ -5,12 +5,23 @@ namespace Gml.Web.Skin.Service.Core.Extensions.Application;
 
 public static class ApplicationExtensions
 {
+    private static string _policyName = "SkinServicePolicy";
+
     public static WebApplicationBuilder CreateService(this WebApplicationBuilder builder)
     {
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        builder.Services.AddAntiforgery();
         builder.Services.AddAutoMapper(typeof(TextureMapper));
+
+        builder.Services
+            .AddCors(o => o.AddPolicy(_policyName, policyBuilder =>
+            {
+                policyBuilder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            }));
 
         CheckFolders();
 
@@ -32,9 +43,10 @@ public static class ApplicationExtensions
 
         app.UseSwagger();
         app.UseSwaggerUI();
-
+        app.UseCors(_policyName);
         // app.UseHttpsRedirection();
         app.AddRoutes();
+        app.UseAntiforgery();
 
         app.Run();
 
@@ -45,7 +57,7 @@ public static class ApplicationExtensions
     {
         app.MapGet("/{userName}", TextureRequests.GetUserTexture);
 
-        app.MapPost("/skin/{userName}", TextureRequests.LoadSkin);
+        app.MapPost("/skin/{userName}", TextureRequests.LoadSkin).DisableAntiforgery();
         app.MapGet("/skin/{userName}/{uuid?}", TextureRequests.GetSkin);
         app.MapGet("/skin/{userName}/head/{size}", TextureRequests.GetSkinHead);
         app.MapGet("/skin/{userName}/front/{size}", TextureRequests.GetSkinFront);
@@ -53,7 +65,7 @@ public static class ApplicationExtensions
         app.MapGet("/skin/{userName}/full-back/{size}", TextureRequests.GetSkinAndCloakBack);
 
         app.MapGet("/cloak/{userName}/{uuid?}", TextureRequests.GetCloakTexture);
-        app.MapPost("/cloak/{userName}", TextureRequests.LoadCloak);
+        app.MapPost("/cloak/{userName}", TextureRequests.LoadCloak).DisableAntiforgery();;
         app.MapGet("/cloak/{userName}/front/{size}", TextureRequests.GetCloak);
 
         app.MapGet("/refresh/{userName}", TextureRequests.RefreshCache);
@@ -61,18 +73,3 @@ public static class ApplicationExtensions
         return app;
     }
 }
-
-// app.MapGet("/weatherforecast", () =>
-// {
-//     var forecast = Enumerable.Range(1, 5).Select(index =>
-//         new WeatherForecast
-//         (
-//             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-//             Random.Shared.Next(-20, 55),
-//             summaries[Random.Shared.Next(summaries.Length)]
-//         ))
-//         .ToArray();
-//     return forecast;
-// })
-// .WithName("GetWeatherForecast")
-// .WithOpenApi();
