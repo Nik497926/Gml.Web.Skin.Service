@@ -29,14 +29,14 @@ public abstract class SkinHelper
             UserName = userName,
             HasSkin = !skinPath.EndsWith(DefaultSkinName),
             HasCloak = !string.IsNullOrEmpty(cloakPath),
-            SkinUrl = $"{requestPathBase}/skin/{userName}",
+            SkinUrl = $"{requestPathBase}/skin/s-{userName}",
             SkinFullPath = skinPath.EndsWith(DefaultSkinName)
                 ? Path.Combine(Environment.CurrentDirectory, SkinTextureDirectory, "default.png")
                 : Path.Combine(Environment.CurrentDirectory, SkinTextureDirectory, $"{userName}.png"),
             CloakFullPath = string.IsNullOrEmpty(cloakPath)
                 ? string.Empty
                 : Path.Combine(Environment.CurrentDirectory, CloakTextureDirectory, $"{userName}.png"),
-            ClockUrl = $"{requestPathBase}/cloak/{userName}",
+            ClockUrl = $"{requestPathBase}/cloak/c-{userName}",
             Texture = new SkinPartialsDto
             {
                 Head = $"{requestPathBase}/skin/{userName}/head/128",
