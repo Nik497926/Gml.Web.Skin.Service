@@ -64,7 +64,7 @@ public static class ApplicationExtensions
         app.MapGet("/skin/{userName}/back/{size}", TextureRequests.GetSkinBack);
         app.MapGet("/skin/{userName}/full-back/{size}", TextureRequests.GetSkinAndCloakBack);
 
-        app.MapGet("/cloak/{userName}/{uuid?}", TextureRequests.GetCloakTexture);
+        app.MapGet("/cloak/{userName}", TextureRequests.GetCloakTexture);
         app.MapPost("/cloak/{userName}", TextureRequests.LoadCloak).DisableAntiforgery();;
         app.MapGet("/cloak/{userName}/front/{size}", TextureRequests.GetCloak);
 
