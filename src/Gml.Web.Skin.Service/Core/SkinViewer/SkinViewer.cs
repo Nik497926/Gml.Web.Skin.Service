@@ -8,6 +8,11 @@ public abstract class SkinViewer
 {
     public static byte[] GetHead(string skinPath, UserTexture userTexture, int size)
     {
+        if (!File.Exists(skinPath))
+        {
+            return [];
+        }
+
         using var inputImage = Image.Load(skinPath);
 
         var scaleFactor = inputImage.Width / 64;
