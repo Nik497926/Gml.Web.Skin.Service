@@ -23,6 +23,19 @@ internal abstract class TextureRequests
 
         return Results.Ok(mapper.Map<UserTextureReadDto>(texture));
     }
+    internal static async Task<IResult> DeleteSkin(HttpRequest request, IMapper mapper,
+        string userName)
+    {
+
+        var filePath = Path.Combine(SkinHelper.SkinTextureDirectory, $"{userName}.png");
+
+        if (!File.Exists(filePath)) 
+            return Results.NotFound();
+        
+        File.Delete(filePath);
+        return Results.Ok();
+
+    }
 
     internal static async Task<IResult> LoadCloak(HttpRequest request, [FromForm] IFormFile file, IMapper mapper,
         string userName)
@@ -39,6 +52,18 @@ internal abstract class TextureRequests
         var texture = SkinHelper.Create($"http://{request.Host.Value}", userName);
 
         return Results.Ok(mapper.Map<UserTextureReadDto>(texture));
+    }
+
+    internal static async Task<IResult> DeleteCloak(HttpRequest request, IMapper mapper,
+        string userName)
+    {
+        var filePath = Path.Combine(SkinHelper.CloakTextureDirectory, $"{userName}.png");
+
+        if (!File.Exists(filePath)) 
+            return Results.NotFound();
+        
+        File.Delete(filePath);
+        return Results.Ok();
     }
 
     internal static Task<IResult> GetSkin(HttpRequest request, string userName, string? uuid)

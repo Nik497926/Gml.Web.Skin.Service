@@ -58,6 +58,7 @@ public static class ApplicationExtensions
         app.MapGet("/{userName}", TextureRequests.GetUserTexture);
 
         app.MapPost("/skin/{userName}", TextureRequests.LoadSkin).DisableAntiforgery();
+        app.MapDelete("/skin/{userName}", TextureRequests.DeleteSkin);
         app.MapGet("/skin/{userName}/{uuid?}", TextureRequests.GetSkin);
         app.MapGet("/skin/{userName}/head/{size}", TextureRequests.GetSkinHead);
         app.MapGet("/skin/{userName}/front/{size}", TextureRequests.GetSkinFront);
@@ -66,6 +67,7 @@ public static class ApplicationExtensions
 
         app.MapGet("/cloak/{userName}", TextureRequests.GetCloakTexture);
         app.MapPost("/cloak/{userName}", TextureRequests.LoadCloak).DisableAntiforgery();;
+        app.MapDelete("/cloak/{userName}", TextureRequests.DeleteCloak);
         app.MapGet("/cloak/{userName}/front/{size}", TextureRequests.GetCloak);
 
         app.MapGet("/refresh/{userName}", TextureRequests.RefreshCache);
