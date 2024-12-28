@@ -126,6 +126,7 @@ public abstract class SkinViewer
         var skinScaleFactor = inputImage.Width / 64;
         var cloakScaleFactor = cloakImage?.Width >= 64 ? cloakImage.Width / 64 : 1;
         var needSkinResizeToCloakSize = cloakScaleFactor > skinScaleFactor;
+        var extendedSkin = inputImage.Height / skinScaleFactor >= 64;
         
         var croppedHead = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(24 * skinScaleFactor, 8 * skinScaleFactor, 8 * skinScaleFactor, 8 * skinScaleFactor)));
@@ -133,15 +134,23 @@ public abstract class SkinViewer
         var croppedBody = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(32 * skinScaleFactor, 20 * skinScaleFactor, 8 * skinScaleFactor, 12 * skinScaleFactor)));
 
-        var croppedLeftLeg = inputImage.Clone(ctx =>
+        var croppedRightLeg = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(12 * skinScaleFactor, 20 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor)));
-
-        var croppedRightLeg = croppedLeftLeg.Clone(x => x.Flip(FlipMode.Horizontal));
-
-        var croppedLeftArm = inputImage.Clone(ctx =>
+        
+        var croppedRightArm = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(52 * skinScaleFactor, 20 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor)));
 
-        var croppedRightArm = croppedLeftArm.Clone(x => x.Flip(FlipMode.Horizontal));
+        var croppedLeftLeg = extendedSkin 
+            ? inputImage.Clone(ctx =>
+                ctx.Crop(new Rectangle(28 * skinScaleFactor, 52 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor)))
+            : croppedRightLeg.Clone(x => x.Flip(FlipMode.Horizontal));
+        
+        var croppedLeftArm = extendedSkin 
+            ? inputImage.Clone(ctx => 
+                ctx.Crop(new Rectangle(44 * skinScaleFactor, 52 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor))) 
+            : croppedRightArm.Clone(x => x.Flip(FlipMode.Horizontal));
+
+        // var croppedRightArm = croppedLeftArm.Clone(x => x.Flip(FlipMode.Horizontal));
 
         if (needSkinResizeToCloakSize)
         {
