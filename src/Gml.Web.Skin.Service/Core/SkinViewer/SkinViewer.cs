@@ -72,10 +72,6 @@ public abstract class SkinViewer
 
         var secondLayerHead = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(40 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor)));
-        var secondLayerBody = inputImage.Clone(ctx =>
-            ctx.Crop(new Rectangle(20 * scaleFactor, 36 * scaleFactor, 8 * scaleFactor, 12 * scaleFactor)));
-        var secondLayerLeg = inputImage.Clone(ctx =>
-            ctx.Crop(new Rectangle(4 * scaleFactor, 52 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)));
         
         // var secondLayerArm = inputImage.Clone(ctx =>
         //     ctx.Crop(new Rectangle(44 * scaleFactor, 52 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)));
@@ -107,10 +103,6 @@ public abstract class SkinViewer
             context.DrawImage(rightCroppedLeg, new Point(rightLegPosition.X, rightLegPosition.Y), 1f);
 
             context.DrawImage(secondLayerHead, new Point(headPosition.X, headPosition.Y), 1f);
-            context.DrawImage(secondLayerBody, new Point(bodyPosition.X, bodyPosition.Y), 1f);
-            
-            context.DrawImage(secondLayerLeg, new Point(leftLegPosition.X, leftLegPosition.Y), 1f);
-            context.DrawImage(secondLayerLeg, new Point(rightLegPosition.X, rightLegPosition.Y), 1f);
         });
 
         if (size != combinedImage.Width)
