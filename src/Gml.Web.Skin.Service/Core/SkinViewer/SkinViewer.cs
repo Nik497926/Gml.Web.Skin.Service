@@ -8,6 +8,11 @@ public abstract class SkinViewer
 {
     public static byte[] GetHead(string skinPath, UserTexture userTexture, int size)
     {
+        if (!File.Exists(skinPath))
+        {
+            return [];
+        }
+
         using var inputImage = Image.Load(skinPath);
 
         var scaleFactor = inputImage.Width / 64;
@@ -44,74 +49,73 @@ public abstract class SkinViewer
         using var inputImage = Image.Load(skinPath);
 
         var scaleFactor = inputImage.Width / 64;
+        var extendedSkin = inputImage.Height / scaleFactor >= 64;
 
         var croppedHead = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(8 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor)));
-
         var croppedBody = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(20 * scaleFactor, 20 * scaleFactor, 8 * scaleFactor, 12 * scaleFactor)));
-
-        var croppedLeg = inputImage.Clone(ctx =>
+        var leftCroppedLeg = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(4 * scaleFactor, 20 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)));
-
-        var croppedArm = inputImage.Clone(ctx =>
+        var leftCroppedArm = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(44 * scaleFactor, 20 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)));
+        
+        var rightCroppedLeg = extendedSkin 
+            ? inputImage.Clone(ctx =>
+                ctx.Crop(new Rectangle(20 * scaleFactor, 52 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)))
+            : leftCroppedLeg.Clone(x => x.Flip(FlipMode.Horizontal));
+        
+        var rightCroppedArm = extendedSkin 
+            ? inputImage.Clone(ctx => 
+                ctx.Crop(new Rectangle(36 * scaleFactor, 52 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor))) 
+            : leftCroppedArm.Clone(x => x.Flip(FlipMode.Horizontal));
 
-        var newWidth = croppedArm.Width * 2 + croppedBody.Width;
-        var newHeight = croppedHead.Height + croppedBody.Height + croppedArm.Height;
+        var secondLayerHead = inputImage.Clone(ctx =>
+            ctx.Crop(new Rectangle(40 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor)));
+        
+        // var secondLayerArm = inputImage.Clone(ctx =>
+        //     ctx.Crop(new Rectangle(44 * scaleFactor, 52 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)));
+
+        var newWidth = leftCroppedArm.Width * 2 + croppedBody.Width;
+        var newHeight = croppedHead.Height + croppedBody.Height + leftCroppedArm.Height;
 
         var combinedImage = new Image<Rgba32>(newWidth, newHeight);
 
         combinedImage.Mutate(context =>
         {
-            var headPosition = new Rectangle(croppedArm.Width, 0, croppedHead.Width, croppedHead.Height);
+            var headPosition = new Rectangle(leftCroppedArm.Width, 0, croppedHead.Width, croppedHead.Height);
             var bodyPosition = new Rectangle(headPosition.X, croppedHead.Height, croppedBody.Width, croppedBody.Height);
 
-            var leftArmPosition = new Rectangle(0, bodyPosition.Y, croppedArm.Width, croppedArm.Height);
+            var leftArmPosition = new Rectangle(0, bodyPosition.Y, leftCroppedArm.Width, leftCroppedArm.Height);
             var rightArmPosition = new Rectangle(leftArmPosition.Width + bodyPosition.Width, leftArmPosition.Y,
                 leftArmPosition.Width, leftArmPosition.Height);
 
             var leftLegPosition = new Rectangle(leftArmPosition.Width, headPosition.Height + bodyPosition.Height,
-                croppedLeg.Width, croppedLeg.Height);
+                leftCroppedLeg.Width, leftCroppedLeg.Height);
             var rightLegPosition = new Rectangle(leftArmPosition.Width + leftLegPosition.Width,
                 headPosition.Height + bodyPosition.Height, leftLegPosition.Width, leftLegPosition.Height);
 
             context.DrawImage(croppedHead, new Point(headPosition.X, headPosition.Y), 1f);
             context.DrawImage(croppedBody, new Point(bodyPosition.X, bodyPosition.Y), 1f);
-            context.DrawImage(croppedArm, new Point(leftArmPosition.X, leftArmPosition.Y), 1f);
-            context.DrawImage(croppedArm, new Point(rightArmPosition.X, rightArmPosition.Y), 1f);
-            context.DrawImage(croppedLeg, new Point(leftLegPosition.X, leftLegPosition.Y), 1f);
-            context.DrawImage(croppedLeg, new Point(rightLegPosition.X, rightLegPosition.Y), 1f);
+            context.DrawImage(leftCroppedArm, new Point(leftArmPosition.X, leftArmPosition.Y), 1f);
+            context.DrawImage(rightCroppedArm, new Point(rightArmPosition.X, rightArmPosition.Y), 1f);
+            context.DrawImage(leftCroppedLeg, new Point(leftLegPosition.X, leftLegPosition.Y), 1f);
+            context.DrawImage(rightCroppedLeg, new Point(rightLegPosition.X, rightLegPosition.Y), 1f);
 
-            // context.DrawImage(croppedArm, new Point(0, 8 * scaleFactor), 1f);
-            // context.DrawImage(croppedLeg, new Point(200, 200), 1f);
+            context.DrawImage(secondLayerHead, new Point(headPosition.X, headPosition.Y), 1f);
         });
-
-        using var memoryStream = new MemoryStream();
-        if (inputImage.Metadata.DecodedImageFormat != null)
-            combinedImage.Save(memoryStream, inputImage.Metadata.DecodedImageFormat);
-        else
-            combinedImage.Save(memoryStream, new PngEncoder());
-
-        // var image = ResizeImage(size, inputImage, combinedImage);
 
         if (size != combinedImage.Width)
         {
             var scaleSize = GetScaleSize(size, combinedImage.Width);
-
             if (scaleSize != 0)
                 combinedImage = combinedImage.Clone(ctx => ctx.Resize(combinedImage.Width * scaleSize,
                     combinedImage.Height * scaleSize, KnownResamplers.Box));
         }
 
-        using var resizeMemoryStream = new MemoryStream();
-
-        if (inputImage.Metadata.DecodedImageFormat != null)
-            combinedImage.Save(resizeMemoryStream, inputImage.Metadata.DecodedImageFormat);
-        else
-            combinedImage.Save(resizeMemoryStream, new PngEncoder());
-
-        return resizeMemoryStream.ToArray();
+        using var memoryStream = new MemoryStream();
+        combinedImage.Save(memoryStream, new PngEncoder());
+        return memoryStream.ToArray();
     }
 
     public static byte[] GetBack(UserTexture user, int size, bool includeCloak = false)
@@ -119,29 +123,50 @@ public abstract class SkinViewer
         using var inputImage = Image.Load(user.SkinFullPath);
         using var cloakImage = includeCloak && user.HasCloak ? Image.Load(user.CloakFullPath) : null;
 
-        var scaleFactor = inputImage.Width / 64;
-
+        var skinScaleFactor = inputImage.Width / 64;
+        var cloakScaleFactor = cloakImage?.Width >= 64 ? cloakImage.Width / 64 : 1;
+        var needSkinResizeToCloakSize = cloakScaleFactor > skinScaleFactor;
+        var extendedSkin = inputImage.Height / skinScaleFactor >= 64;
+        
         var croppedHead = inputImage.Clone(ctx =>
-            ctx.Crop(new Rectangle(24 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor)));
+            ctx.Crop(new Rectangle(24 * skinScaleFactor, 8 * skinScaleFactor, 8 * skinScaleFactor, 8 * skinScaleFactor)));
 
         var croppedBody = inputImage.Clone(ctx =>
-            ctx.Crop(new Rectangle(32 * scaleFactor, 20 * scaleFactor, 8 * scaleFactor, 12 * scaleFactor)));
+            ctx.Crop(new Rectangle(32 * skinScaleFactor, 20 * skinScaleFactor, 8 * skinScaleFactor, 12 * skinScaleFactor)));
 
-        var croppedLeftLeg = inputImage.Clone(ctx =>
-            ctx.Crop(new Rectangle(12 * scaleFactor, 20 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)));
+        var croppedRightLeg = inputImage.Clone(ctx =>
+            ctx.Crop(new Rectangle(12 * skinScaleFactor, 20 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor)));
+        
+        var croppedRightArm = inputImage.Clone(ctx =>
+            ctx.Crop(new Rectangle(52 * skinScaleFactor, 20 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor)));
 
-        var croppedRightLeg = croppedLeftLeg.Clone(x => x.Flip(FlipMode.Horizontal));
+        var croppedLeftLeg = extendedSkin 
+            ? inputImage.Clone(ctx =>
+                ctx.Crop(new Rectangle(28 * skinScaleFactor, 52 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor)))
+            : croppedRightLeg.Clone(x => x.Flip(FlipMode.Horizontal));
+        
+        var croppedLeftArm = extendedSkin 
+            ? inputImage.Clone(ctx => 
+                ctx.Crop(new Rectangle(44 * skinScaleFactor, 52 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor))) 
+            : croppedRightArm.Clone(x => x.Flip(FlipMode.Horizontal));
 
-        var croppedLeftArm = inputImage.Clone(ctx =>
-            ctx.Crop(new Rectangle(52 * scaleFactor, 20 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)));
+        // var croppedRightArm = croppedLeftArm.Clone(x => x.Flip(FlipMode.Horizontal));
 
-        var croppedRightArm = croppedLeftArm.Clone(x => x.Flip(FlipMode.Horizontal));
+        if (needSkinResizeToCloakSize)
+        {
+            croppedHead = ResizeImage(croppedHead, cloakScaleFactor);
+            croppedBody = ResizeImage(croppedBody, cloakScaleFactor);
+            croppedLeftLeg = ResizeImage(croppedLeftLeg, cloakScaleFactor);
+            croppedRightLeg = ResizeImage(croppedRightLeg, cloakScaleFactor);
+            croppedLeftArm = ResizeImage(croppedLeftArm, cloakScaleFactor);
+            croppedRightArm = ResizeImage(croppedRightArm, cloakScaleFactor);
+        }
 
         Image croppedCloak = null;
 
         if (includeCloak && cloakImage != null)
             croppedCloak = cloakImage.Clone(ctx =>
-                    ctx.Crop(new Rectangle(0, 0, 11, 17)))
+                    ctx.Crop(new Rectangle(0, 0, 11 * cloakScaleFactor, 17 * cloakScaleFactor)))
                 .Clone(ctx => ctx.Resize(croppedBody.Width, croppedBody.Height, KnownResamplers.Box));
 
         var newWidth = croppedLeftArm.Width * 2 + croppedBody.Width;
@@ -204,6 +229,13 @@ public abstract class SkinViewer
             combinedImage.Save(resizeMemoryStream, new PngEncoder());
 
         return resizeMemoryStream.ToArray();
+    }
+
+    private static Image ResizeImage(Image croppedHead, int cloakScaleFactor)
+    {
+        var newSize = croppedHead.Size;
+        croppedHead = croppedHead.Clone(ctx => ctx.Resize(newSize.Width * cloakScaleFactor, newSize.Height * cloakScaleFactor, KnownResamplers.Box));
+        return croppedHead;
     }
 
 

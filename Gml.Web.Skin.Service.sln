@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{3E651A
 		Dockerfile = Dockerfile
 		.dockerignore = .dockerignore
 		.gitignore = .gitignore
+		compose.yaml = compose.yaml
 	EndProjectSection
 EndProject
 Global
