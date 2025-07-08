@@ -13,4 +13,5 @@ public class UserTexture
     public string? CloakFullPath { get; set; }
     public SkinPartialsDto Texture { get; set; } = null!;
     public SkinFormat SkinFormat { get; set; }
+    public SkinType SkinType { get; set; }
 }
