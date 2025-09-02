@@ -13,7 +13,10 @@ public static class ApplicationExtensions
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddAntiforgery();
-        builder.Services.AddAutoMapper(typeof(TextureMapper));
+        builder.Services.AddAutoMapper(map =>
+        {
+            map.AddProfile<TextureMapper>();
+        });
 
         builder.Services
             .AddCors(o => o.AddPolicy(_policyName, policyBuilder =>
