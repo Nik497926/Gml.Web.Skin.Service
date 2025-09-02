@@ -50,6 +50,7 @@ public abstract class SkinViewer
 
         var scaleFactor = inputImage.Width / 64;
         var extendedSkin = inputImage.Height / scaleFactor >= 64;
+        var isSlim = user.SkinType == SkinType.Slim;
 
         var croppedHead = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(8 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor)));
@@ -57,33 +58,33 @@ public abstract class SkinViewer
             ctx.Crop(new Rectangle(20 * scaleFactor, 20 * scaleFactor, 8 * scaleFactor, 12 * scaleFactor)));
         var leftCroppedLeg = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(4 * scaleFactor, 20 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)));
+
+        // Для slim скина рука тоньше на 1 пиксель
+        var armWidth = isSlim ? 3 * scaleFactor : 4 * scaleFactor;
         var leftCroppedArm = inputImage.Clone(ctx =>
-            ctx.Crop(new Rectangle(44 * scaleFactor, 20 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)));
-        
-        var rightCroppedLeg = extendedSkin 
+            ctx.Crop(new Rectangle(44 * scaleFactor, 20 * scaleFactor, armWidth, 12 * scaleFactor)));
+
+        var rightCroppedLeg = extendedSkin
             ? inputImage.Clone(ctx =>
                 ctx.Crop(new Rectangle(20 * scaleFactor, 52 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)))
             : leftCroppedLeg.Clone(x => x.Flip(FlipMode.Horizontal));
-        
-        var rightCroppedArm = extendedSkin 
-            ? inputImage.Clone(ctx => 
-                ctx.Crop(new Rectangle(36 * scaleFactor, 52 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor))) 
+
+        var rightCroppedArm = extendedSkin
+            ? inputImage.Clone(ctx =>
+                ctx.Crop(new Rectangle(36 * scaleFactor, 52 * scaleFactor, armWidth, 12 * scaleFactor)))
             : leftCroppedArm.Clone(x => x.Flip(FlipMode.Horizontal));
 
         var secondLayerHead = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(40 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor, 8 * scaleFactor)));
-        
-        // var secondLayerArm = inputImage.Clone(ctx =>
-        //     ctx.Crop(new Rectangle(44 * scaleFactor, 52 * scaleFactor, 4 * scaleFactor, 12 * scaleFactor)));
 
-        var newWidth = leftCroppedArm.Width * 2 + croppedBody.Width;
+        var newWidth = (leftCroppedArm.Width * 2) + croppedBody.Width;
         var newHeight = croppedHead.Height + croppedBody.Height + leftCroppedArm.Height;
 
         var combinedImage = new Image<Rgba32>(newWidth, newHeight);
 
         combinedImage.Mutate(context =>
         {
-            var headPosition = new Rectangle(leftCroppedArm.Width, 0, croppedHead.Width, croppedHead.Height);
+            var headPosition = new Rectangle((newWidth - croppedHead.Width) / 2, 0, croppedHead.Width, croppedHead.Height);
             var bodyPosition = new Rectangle(headPosition.X, croppedHead.Height, croppedBody.Width, croppedBody.Height);
 
             var leftArmPosition = new Rectangle(0, bodyPosition.Y, leftCroppedArm.Width, leftCroppedArm.Height);
@@ -127,7 +128,8 @@ public abstract class SkinViewer
         var cloakScaleFactor = cloakImage?.Width >= 64 ? cloakImage.Width / 64 : 1;
         var needSkinResizeToCloakSize = cloakScaleFactor > skinScaleFactor;
         var extendedSkin = inputImage.Height / skinScaleFactor >= 64;
-        
+        var isSlim = user.SkinType == SkinType.Slim;
+
         var croppedHead = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(24 * skinScaleFactor, 8 * skinScaleFactor, 8 * skinScaleFactor, 8 * skinScaleFactor)));
 
@@ -136,21 +138,21 @@ public abstract class SkinViewer
 
         var croppedRightLeg = inputImage.Clone(ctx =>
             ctx.Crop(new Rectangle(12 * skinScaleFactor, 20 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor)));
-        
-        var croppedRightArm = inputImage.Clone(ctx =>
-            ctx.Crop(new Rectangle(52 * skinScaleFactor, 20 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor)));
 
-        var croppedLeftLeg = extendedSkin 
+        // Для slim скина рука тоньше на 1 пиксель
+        var armWidth = isSlim ? 3 * skinScaleFactor : 4 * skinScaleFactor;
+        var croppedRightArm = inputImage.Clone(ctx =>
+            ctx.Crop(new Rectangle(52 * skinScaleFactor, 20 * skinScaleFactor, armWidth, 12 * skinScaleFactor)));
+
+        var croppedLeftLeg = extendedSkin
             ? inputImage.Clone(ctx =>
                 ctx.Crop(new Rectangle(28 * skinScaleFactor, 52 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor)))
             : croppedRightLeg.Clone(x => x.Flip(FlipMode.Horizontal));
-        
-        var croppedLeftArm = extendedSkin 
-            ? inputImage.Clone(ctx => 
-                ctx.Crop(new Rectangle(44 * skinScaleFactor, 52 * skinScaleFactor, 4 * skinScaleFactor, 12 * skinScaleFactor))) 
-            : croppedRightArm.Clone(x => x.Flip(FlipMode.Horizontal));
 
-        // var croppedRightArm = croppedLeftArm.Clone(x => x.Flip(FlipMode.Horizontal));
+        var croppedLeftArm = extendedSkin
+            ? inputImage.Clone(ctx =>
+                ctx.Crop(new Rectangle(44 * skinScaleFactor, 52 * skinScaleFactor, armWidth, 12 * skinScaleFactor)))
+            : croppedRightArm.Clone(x => x.Flip(FlipMode.Horizontal));
 
         if (needSkinResizeToCloakSize)
         {
@@ -174,10 +176,9 @@ public abstract class SkinViewer
 
         var combinedImage = new Image<Rgba32>(newWidth, newHeight);
 
-
         combinedImage.Mutate(context =>
         {
-            var headPosition = new Rectangle(croppedLeftArm.Width, 0, croppedHead.Width, croppedHead.Height);
+            var headPosition = new Rectangle((newWidth - croppedHead.Width) / 2, 0, croppedHead.Width, croppedHead.Height);
             var bodyPosition = new Rectangle(headPosition.X, croppedHead.Height, croppedBody.Width, croppedBody.Height);
 
             var leftArmPosition = new Rectangle(0, bodyPosition.Y, croppedLeftArm.Width, croppedLeftArm.Height);
@@ -196,21 +197,8 @@ public abstract class SkinViewer
             context.DrawImage(croppedLeftLeg, new Point(leftLegPosition.X, leftLegPosition.Y), 1f);
             context.DrawImage(croppedRightLeg, new Point(rightLegPosition.X, rightLegPosition.Y), 1f);
 
-
             if (croppedCloak != null) context.DrawImage(croppedCloak, new Point(bodyPosition.X, bodyPosition.Y), 1f);
-
-
-            // context.DrawImage(croppedArm, new Point(0, 8 * scaleFactor), 1f);
-            // context.DrawImage(croppedLeg, new Point(200, 200), 1f);
         });
-
-        using var memoryStream = new MemoryStream();
-        if (inputImage.Metadata.DecodedImageFormat != null)
-            combinedImage.Save(memoryStream, inputImage.Metadata.DecodedImageFormat);
-        else
-            combinedImage.Save(memoryStream, new PngEncoder());
-
-        // var image = ResizeImage(size, inputImage, combinedImage);
 
         if (size != combinedImage.Width)
         {

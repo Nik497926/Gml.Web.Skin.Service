@@ -15,23 +15,38 @@ internal abstract class TextureRequests
 
         var tempFile = Path.Combine(SkinHelper.SkinTextureDirectory, $"{userName}.png");
 
-        await using var stream = File.OpenWrite(tempFile);
-        await file.CopyToAsync(stream);
-        stream.Close();
+        try
+        {
+            // Если файл существует, удаляем его
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
 
-        var texture = SkinHelper.Create($"http://{request.Host.Value}", userName);
+            // Создаем новый файл и копируем в него данные
+            using (var fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                await file.CopyToAsync(fileStream);
+            }
 
-        return Results.Ok(mapper.Map<UserTextureReadDto>(texture));
+            var texture = SkinHelper.Create($"http://{request.Host.Value}", userName);
+            return Results.Ok(mapper.Map<UserTextureReadDto>(texture));
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest($"Error saving skin: {ex.Message}");
+        }
     }
+
     internal static async Task<IResult> DeleteSkin(HttpRequest request, IMapper mapper,
         string userName)
     {
 
         var filePath = Path.Combine(SkinHelper.SkinTextureDirectory, $"{userName}.png");
 
-        if (!File.Exists(filePath)) 
+        if (!File.Exists(filePath))
             return Results.NotFound();
-        
+
         File.Delete(filePath);
         return Results.Ok();
 
@@ -45,13 +60,27 @@ internal abstract class TextureRequests
 
         var tempFile = Path.Combine(SkinHelper.CloakTextureDirectory, $"{userName}.png");
 
-        await using var stream = File.OpenWrite(tempFile);
-        await file.CopyToAsync(stream);
-        stream.Close();
+        try
+        {
+            // Если файл существует, удаляем его
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
 
-        var texture = SkinHelper.Create($"http://{request.Host.Value}", userName);
+            // Создаем новый файл и копируем в него данные
+            using (var fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                await file.CopyToAsync(fileStream);
+            }
 
-        return Results.Ok(mapper.Map<UserTextureReadDto>(texture));
+            var texture = SkinHelper.Create($"http://{request.Host.Value}", userName);
+            return Results.Ok(mapper.Map<UserTextureReadDto>(texture));
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest($"Error saving cloak: {ex.Message}");
+        }
     }
 
     internal static async Task<IResult> DeleteCloak(HttpRequest request, IMapper mapper,
@@ -59,9 +88,9 @@ internal abstract class TextureRequests
     {
         var filePath = Path.Combine(SkinHelper.CloakTextureDirectory, $"{userName}.png");
 
-        if (!File.Exists(filePath)) 
+        if (!File.Exists(filePath))
             return Results.NotFound();
-        
+
         File.Delete(filePath);
         return Results.Ok();
     }
